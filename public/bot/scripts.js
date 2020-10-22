@@ -1,6 +1,7 @@
 const messageInput = document.querySelector('#user-input');
 const conversationElem = document.querySelector('#conversation-container');
 
+
 // focus the input on load
 const handleFocus = () => {
   messageInput.focus();
@@ -20,16 +21,34 @@ const updateConversation = (message) => {
   handleFocus();
 };
 
+let jokesMode = false
+
+
 const sendMessage = (event) => {
   event.preventDefault();
-
   const message = { author: 'user', text: messageInput.value };
-  updateConversation(message);
 
-  fetch('/bot-message')
+  updateConversation(message);
+  
+  let conversationDirection = ""
+  
+  if(jokesMode){
+    conversationDirection = `/bot-jokes/?message=${message.text}`
+  } else{
+    conversationDirection = `/bot-message/?message=${message.text}`
+  }
+
+  
+  fetch(conversationDirection)
     .then((res) => res.json())
     .then((data) => {
       console.log(data);
+      if(data.message.text.includes('YES or NO')){
+        jokesMode = true
+      }
+      if(data.message.text.includes('goodbye')){
+        jokesMode = false
+      }
       updateConversation(data.message);
     });
 };
